@@ -7,6 +7,9 @@ import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
 import com.alexjlockwood.twentyfortyeight.domain.*
 import com.alexjlockwood.twentyfortyeight.repository.GameRepository
+import com.alexjlockwood.twentyfortyeight.ui.observer.DirectionObserver
+import com.alexjlockwood.twentyfortyeight.ui.observer.VoiceDirectionMapper
+import com.alexjlockwood.twentyfortyeight.ui.observer.VoiceObserver
 import com.google.android.material.math.MathUtils.floorMod
 import kotlin.math.max
 
@@ -17,7 +20,10 @@ private val EMPTY_GRID = (0 until GRID_SIZE).map { arrayOfNulls<Tile?>(GRID_SIZE
 /**
  * View model class that contains the logic that powers the 2048 game.
  */
-class GameViewModel(private val gameRepository: GameRepository) : ViewModel() {
+class GameViewModel(
+    private val gameRepository: GameRepository,
+    private val voiceDirectionMapper: VoiceDirectionMapper,
+) : ViewModel() {
 
     private var grid: List<List<Tile?>> = EMPTY_GRID
     var gridTileMovements by mutableStateOf<List<GridTileMovement>>(listOf())
@@ -30,6 +36,17 @@ class GameViewModel(private val gameRepository: GameRepository) : ViewModel() {
         private set
     var moveCount by mutableStateOf(0)
         private set
+
+    var isVoiceOn by mutableStateOf(false)
+        private set
+
+    var isDebugOn by mutableStateOf(false)
+        private set
+
+    var directionValue by mutableStateOf("")
+        private set
+
+    private lateinit var voiceObserver: DirectionObserver
 
     init {
         val savedGrid = gameRepository.grid
@@ -59,7 +76,15 @@ class GameViewModel(private val gameRepository: GameRepository) : ViewModel() {
         gameRepository.saveState(grid, currentScore, bestScore)
     }
 
+    fun move(directionVoice: String): Boolean {
+        val direction = voiceDirectionMapper.mappingToDirection(directionVoice) ?: return false
+        move(direction = direction)
+        return true
+    }
+
     fun move(direction: Direction) {
+        directionValue = direction.name
+
         var (updatedGrid, updatedGridTileMovements) = makeMove(grid, direction)
 
         if (!hasGridChanged(updatedGridTileMovements)) {
@@ -87,6 +112,24 @@ class GameViewModel(private val gameRepository: GameRepository) : ViewModel() {
         this.moveCount++
         this.gameRepository.saveState(this.grid, this.currentScore, this.bestScore)
     }
+
+    fun debugChange(debug: Boolean) {
+        isDebugOn = debug
+    }
+
+    fun enableVoice(enabled: Boolean) {
+        isVoiceOn = enabled
+        if (isVoiceOn) {
+            voiceObserver.start()
+        } else {
+            voiceObserver.stop()
+        }
+    }
+
+    fun setDirectionObserver(voiceObserver: DirectionObserver) {
+        this.voiceObserver = voiceObserver
+    }
+
 }
 
 private fun createRandomAddedTile(grid: List<List<Tile?>>): GridTileMovement? {

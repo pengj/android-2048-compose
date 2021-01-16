@@ -4,12 +4,13 @@ import android.content.Context
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import com.alexjlockwood.twentyfortyeight.repository.GameRepository
+import com.alexjlockwood.twentyfortyeight.ui.observer.VoiceDirectionMapper
 
 class GameViewModelFactory(context: Context) : ViewModelProvider.Factory {
     private val context = context.applicationContext
 
     override fun <T : ViewModel> create(modelClass: Class<T>): T {
         @Suppress("UNCHECKED_CAST")
-        return GameViewModel(GameRepository(context)) as T
+        return GameViewModel(GameRepository(context), VoiceDirectionMapper()) as T
     }
 }

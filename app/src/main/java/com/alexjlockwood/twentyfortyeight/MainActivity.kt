@@ -8,15 +8,21 @@ import androidx.compose.material.Surface
 import androidx.compose.ui.platform.setContent
 import com.alexjlockwood.twentyfortyeight.ui.AppTheme
 import com.alexjlockwood.twentyfortyeight.ui.GameUi
+import com.alexjlockwood.twentyfortyeight.ui.observer.DirectionObserver
+import com.alexjlockwood.twentyfortyeight.ui.observer.HuaweiVoiceObserver
 import com.alexjlockwood.twentyfortyeight.viewmodel.GameViewModel
 import com.alexjlockwood.twentyfortyeight.viewmodel.GameViewModelFactory
+import com.huawei.agconnect.config.AGConnectServicesConfig
+import com.huawei.hms.mlsdk.common.MLApplication
 
+private const val API_KEY = "client/api_key"
 class MainActivity : AppCompatActivity() {
+
+    private lateinit var voiceObserver: DirectionObserver
+    private val gameViewModel by viewModels<GameViewModel> { GameViewModelFactory(this) }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-
-        val gameViewModel by viewModels<GameViewModel> { GameViewModelFactory(this) }
 
         setContent {
             AppTheme {
@@ -27,11 +33,34 @@ class MainActivity : AppCompatActivity() {
                         bestScore = gameViewModel.bestScore,
                         moveCount = gameViewModel.moveCount,
                         isGameOver = gameViewModel.isGameOver,
+                        isDebugOn = gameViewModel.isDebugOn,
+                        isVoiceOn = gameViewModel.isVoiceOn,
+                        direction = gameViewModel.directionValue,
+                        onDebugRequested = {debug -> gameViewModel.debugChange(debug)},
+                        onVoiceRequested = {enabled -> gameViewModel.enableVoice(enabled)},
                         onNewGameRequested = { gameViewModel.startNewGame() },
-                        onSwipeListener = { direction -> gameViewModel.move(direction) },
-                    )
+                    ) { direction -> gameViewModel.move(direction) }
                 }
             }
         }
+
+        setObservers()
     }
+
+    override fun onDestroy() {
+        super.onDestroy()
+        voiceObserver.destroy()
+    }
+
+    private fun setObservers() {
+        val  config  = AGConnectServicesConfig.fromContext(application)
+        MLApplication.getInstance().apiKey = config.getString(API_KEY)
+
+        voiceObserver = HuaweiVoiceObserver {
+                direction -> gameViewModel.move(direction)
+        }
+        voiceObserver.init(this)
+        gameViewModel.setDirectionObserver(voiceObserver)
+    }
+
 }

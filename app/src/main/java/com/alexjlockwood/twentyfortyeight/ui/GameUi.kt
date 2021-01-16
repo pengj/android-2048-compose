@@ -1,18 +1,22 @@
 package com.alexjlockwood.twentyfortyeight.ui
 
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.ExperimentalAnimationApi
+import androidx.compose.foundation.Icon
+import androidx.compose.foundation.Text
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.WithConstraints
 import androidx.compose.ui.gesture.MinFlingVelocity
 import androidx.compose.ui.gesture.TouchSlop
 import androidx.compose.ui.gesture.dragGestureFilter
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.layout.WithConstraints
 import androidx.compose.ui.layout.layoutId
-import androidx.compose.ui.platform.AmbientDensity
+import androidx.compose.ui.platform.DensityAmbient
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.TextUnit
@@ -21,10 +25,12 @@ import androidx.compose.ui.unit.sp
 import com.alexjlockwood.twentyfortyeight.R
 import com.alexjlockwood.twentyfortyeight.domain.Direction
 import com.alexjlockwood.twentyfortyeight.domain.GridTileMovement
+import com.alexjlockwood.twentyfortyeight.ui.observer.SwipeDragObserver
 
 /**
  * Renders the 2048 game's home screen UI.
  */
+@OptIn(ExperimentalAnimationApi::class)
 @Composable
 fun GameUi(
     gridTileMovements: List<GridTileMovement>,
@@ -32,7 +38,12 @@ fun GameUi(
     bestScore: Int,
     moveCount: Int,
     isGameOver: Boolean,
+    isDebugOn: Boolean,
+    isVoiceOn: Boolean,
+    direction: String,
     onNewGameRequested: () -> Unit,
+    onDebugRequested: (debug: Boolean) -> Unit,
+    onVoiceRequested: (enabled: Boolean) -> Unit,
     onSwipeListener: (direction: Direction) -> Unit,
 ) {
     var shouldShowNewGameDialog by remember { mutableStateOf(false) }
@@ -48,7 +59,7 @@ fun GameUi(
             )
         }
     ) {
-        val dragObserver = with(AmbientDensity.current) {
+        val dragObserver = with(DensityAmbient.current) {
             SwipeDragObserver(TouchSlop.toPx(), MinFlingVelocity.toPx(), onSwipeListener)
         }
         WithConstraints {
@@ -66,6 +77,25 @@ fun GameUi(
                 TextLabel(text = "Score", layoutId = "currentScoreLabel", fontSize = 18.sp)
                 TextLabel(text = "$bestScore", layoutId = "bestScoreText", fontSize = 36.sp)
                 TextLabel(text = "Best", layoutId = "bestScoreLabel", fontSize = 18.sp)
+                ActionSwitch(
+                    checked = isDebugOn,
+                    onCheckedChange = {
+                        onDebugRequested(it)
+                    },
+                    text = "Debug",
+                    id = "debugSwitch"
+                )
+                ActionSwitch(
+                    checked = isVoiceOn,
+                    onCheckedChange = {
+                        onVoiceRequested(it)
+                    },
+                    text = "Voice",
+                    id = "voiceSwitch"
+                )
+                AnimatedVisibility(visible = isDebugOn, modifier = Modifier.layoutId("debugView")) {
+                    DebugView(text = direction)
+                }
             }
         }
     }
@@ -110,6 +140,8 @@ private fun buildConstraints(isPortrait: Boolean): ConstraintSet {
         val currentScoreLabel = createRefFor("currentScoreLabel")
         val bestScoreText = createRefFor("bestScoreText")
         val bestScoreLabel = createRefFor("bestScoreLabel")
+        val debugSwitch = createRefFor("debugSwitch")
+        val voiceSwitch = createRefFor("voiceSwitch")
 
         if (isPortrait) {
             constrain(gameGrid) {
@@ -133,6 +165,15 @@ private fun buildConstraints(isPortrait: Boolean): ConstraintSet {
                 end.linkTo(bestScoreText.end)
                 top.linkTo(bestScoreText.bottom)
             }
+            constrain(debugSwitch) {
+                start.linkTo(parent.start, 16.dp)
+                bottom.linkTo(parent.bottom, 32.dp)
+            }
+            constrain(voiceSwitch) {
+                start.linkTo(parent.start, 16.dp)
+                bottom.linkTo(debugSwitch.top, 32.dp)
+            }
+
         } else {
             constrain(gameGrid) {
                 start.linkTo(parent.start)
