@@ -29,13 +29,7 @@ class MainActivity : AppCompatActivity() {
                 Surface(color = MaterialTheme.colors.background) {
                     GameUi(
                         gridTileMovements = gameViewModel.gridTileMovements,
-                        currentScore = gameViewModel.currentScore,
-                        bestScore = gameViewModel.bestScore,
-                        moveCount = gameViewModel.moveCount,
-                        isGameOver = gameViewModel.isGameOver,
-                        isDebugOn = gameViewModel.isDebugOn,
-                        isVoiceOn = gameViewModel.isVoiceOn,
-                        direction = gameViewModel.directionValue,
+                        state = gameViewModel.gameState,
                         onDebugRequested = {debug -> gameViewModel.debugChange(debug)},
                         onVoiceRequested = {enabled -> gameViewModel.enableVoice(enabled)},
                         onNewGameRequested = { gameViewModel.startNewGame() },

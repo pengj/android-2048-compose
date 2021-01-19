@@ -7,9 +7,9 @@ import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
 import com.alexjlockwood.twentyfortyeight.domain.*
 import com.alexjlockwood.twentyfortyeight.repository.GameRepository
+import com.alexjlockwood.twentyfortyeight.ui.GameState
 import com.alexjlockwood.twentyfortyeight.ui.observer.DirectionObserver
 import com.alexjlockwood.twentyfortyeight.ui.observer.VoiceDirectionMapper
-import com.alexjlockwood.twentyfortyeight.ui.observer.VoiceObserver
 import com.google.android.material.math.MathUtils.floorMod
 import kotlin.math.max
 
@@ -28,22 +28,10 @@ class GameViewModel(
     private var grid: List<List<Tile?>> = EMPTY_GRID
     var gridTileMovements by mutableStateOf<List<GridTileMovement>>(listOf())
         private set
-    var currentScore by mutableStateOf(gameRepository.currentScore)
-        private set
-    var bestScore by mutableStateOf(gameRepository.bestScore)
-        private set
-    var isGameOver by mutableStateOf(false)
-        private set
-    var moveCount by mutableStateOf(0)
-        private set
 
-    var isVoiceOn by mutableStateOf(false)
-        private set
-
-    var isDebugOn by mutableStateOf(false)
-        private set
-
-    var directionValue by mutableStateOf("")
+    var gameState by mutableStateOf(GameState(
+        currentScore = gameRepository.currentScore,
+        bestScore = gameRepository.bestScore))
         private set
 
     private lateinit var voiceObserver: DirectionObserver
@@ -60,9 +48,8 @@ class GameViewModel(
                     if (it == null) null else GridTileMovement.noop(GridTile(Cell(row, col), Tile(it)))
                 }
             }.filterNotNull()
-            currentScore = gameRepository.currentScore
-            bestScore = gameRepository.bestScore
-            isGameOver = checkIsGameOver(this.grid)
+            gameState = gameState.copy(currentScore = gameRepository.currentScore, bestScore = gameRepository.bestScore,
+            isGameOver = checkIsGameOver(this.grid))
         }
     }
 
@@ -70,10 +57,8 @@ class GameViewModel(
         gridTileMovements = (0 until NUM_INITIAL_TILES).mapNotNull { createRandomAddedTile(EMPTY_GRID) }
         val addedGridTiles = gridTileMovements.map { it.toGridTile }
         grid = EMPTY_GRID.map { row, col, _ -> addedGridTiles.find { row == it.cell.row && col == it.cell.col }?.tile }
-        currentScore = 0
-        isGameOver = false
-        moveCount = 0
-        gameRepository.saveState(grid, currentScore, bestScore)
+        gameState = gameState.copy(currentScore = 0, isGameOver = false, moveCount = 0)
+        gameRepository.saveState(grid, 0, gameRepository.bestScore)
     }
 
     fun move(directionVoice: String): Boolean {
@@ -83,7 +68,7 @@ class GameViewModel(
     }
 
     fun move(direction: Direction) {
-        directionValue = direction.name
+        gameState = gameState.copy(direction = direction.name)
 
         var (updatedGrid, updatedGridTileMovements) = makeMove(grid, direction)
 
@@ -94,8 +79,9 @@ class GameViewModel(
 
         // Increment the score.
         val scoreIncrement = updatedGridTileMovements.filter { it.fromGridTile == null }.sumBy { it.toGridTile.tile.num }
-        currentScore += scoreIncrement
-        bestScore = max(bestScore, currentScore)
+        val currentScore = gameState.currentScore + scoreIncrement
+        val bestScore = max(gameState.bestScore, currentScore)
+        val moveCount = gameState.moveCount + 1
 
         // Attempt to add a new tile to the grid.
         updatedGridTileMovements = updatedGridTileMovements.toMutableList()
@@ -108,18 +94,18 @@ class GameViewModel(
 
         this.grid = updatedGrid
         this.gridTileMovements = updatedGridTileMovements.sortedWith { a, _ -> if (a.fromGridTile == null) 1 else -1 }
-        this.isGameOver = checkIsGameOver(grid)
-        this.moveCount++
-        this.gameRepository.saveState(this.grid, this.currentScore, this.bestScore)
+        gameState = gameState.copy(currentScore = currentScore, bestScore = bestScore,
+            isGameOver = checkIsGameOver(grid), moveCount = moveCount)
+        this.gameRepository.saveState(this.grid, currentScore, bestScore)
     }
 
     fun debugChange(debug: Boolean) {
-        isDebugOn = debug
+        gameState = gameState.copy(isDebugOn = debug)
     }
 
     fun enableVoice(enabled: Boolean) {
-        isVoiceOn = enabled
-        if (isVoiceOn) {
+        gameState = gameState.copy(isVoiceOn = enabled)
+        if (enabled) {
             voiceObserver.start()
         } else {
             voiceObserver.stop()

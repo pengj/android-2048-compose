@@ -34,13 +34,7 @@ import com.alexjlockwood.twentyfortyeight.ui.observer.SwipeDragObserver
 @Composable
 fun GameUi(
     gridTileMovements: List<GridTileMovement>,
-    currentScore: Int,
-    bestScore: Int,
-    moveCount: Int,
-    isGameOver: Boolean,
-    isDebugOn: Boolean,
-    isVoiceOn: Boolean,
-    direction: String,
+    state: GameState,
     onNewGameRequested: () -> Unit,
     onDebugRequested: (debug: Boolean) -> Unit,
     onVoiceRequested: (enabled: Boolean) -> Unit,
@@ -66,19 +60,24 @@ fun GameUi(
             val isPortrait = maxWidth < maxHeight
             ConstraintLayout(
                 constraintSet = buildConstraints(isPortrait),
-                modifier = Modifier.fillMaxSize().dragGestureFilter(dragObserver),
+                modifier = Modifier
+                    .fillMaxSize()
+                    .dragGestureFilter(dragObserver),
             ) {
                 GameGrid(
-                    modifier = Modifier.aspectRatio(1f).padding(16.dp).layoutId("gameGrid"),
+                    modifier = Modifier
+                        .aspectRatio(1f)
+                        .padding(16.dp)
+                        .layoutId("gameGrid"),
                     gridTileMovements = gridTileMovements,
-                    moveCount = moveCount,
+                    moveCount = state.moveCount,
                 )
-                TextLabel(text = "$currentScore", layoutId = "currentScoreText", fontSize = 36.sp)
+                TextLabel(text = "${state.currentScore}", layoutId = "currentScoreText", fontSize = 36.sp)
                 TextLabel(text = "Score", layoutId = "currentScoreLabel", fontSize = 18.sp)
-                TextLabel(text = "$bestScore", layoutId = "bestScoreText", fontSize = 36.sp)
+                TextLabel(text = "${state.bestScore}", layoutId = "bestScoreText", fontSize = 36.sp)
                 TextLabel(text = "Best", layoutId = "bestScoreLabel", fontSize = 18.sp)
                 ActionSwitch(
-                    checked = isDebugOn,
+                    checked = state.isDebugOn,
                     onCheckedChange = {
                         onDebugRequested(it)
                     },
@@ -86,20 +85,20 @@ fun GameUi(
                     id = "debugSwitch"
                 )
                 ActionSwitch(
-                    checked = isVoiceOn,
+                    checked = state.isVoiceOn,
                     onCheckedChange = {
                         onVoiceRequested(it)
                     },
                     text = "Voice",
                     id = "voiceSwitch"
                 )
-                AnimatedVisibility(visible = isDebugOn, modifier = Modifier.layoutId("debugView")) {
-                    DebugView(text = direction)
+                AnimatedVisibility(visible = state.isDebugOn, modifier = Modifier.layoutId("debugView")) {
+                    DebugView(text = state.direction)
                 }
             }
         }
     }
-    if (isGameOver) {
+    if (state.isGameOver) {
         GameDialog(
             title = "Game over",
             message = "Start a new game?",
@@ -142,6 +141,7 @@ private fun buildConstraints(isPortrait: Boolean): ConstraintSet {
         val bestScoreLabel = createRefFor("bestScoreLabel")
         val debugSwitch = createRefFor("debugSwitch")
         val voiceSwitch = createRefFor("voiceSwitch")
+        val debugView = createRefFor("debugView")
 
         if (isPortrait) {
             constrain(gameGrid) {
@@ -173,6 +173,10 @@ private fun buildConstraints(isPortrait: Boolean): ConstraintSet {
                 start.linkTo(parent.start, 16.dp)
                 bottom.linkTo(debugSwitch.top, 32.dp)
             }
+            constrain(debugView) {
+                start.linkTo(voiceSwitch.end, 32.dp)
+                top.linkTo(voiceSwitch.top, 32.dp)
+            }
 
         } else {
             constrain(gameGrid) {
@@ -195,6 +199,18 @@ private fun buildConstraints(isPortrait: Boolean): ConstraintSet {
             constrain(bestScoreLabel) {
                 start.linkTo(gameGrid.end)
                 bottom.linkTo(gameGrid.bottom, 16.dp)
+            }
+            constrain(debugSwitch) {
+                start.linkTo(parent.start, 16.dp)
+                bottom.linkTo(parent.bottom, 32.dp)
+            }
+            constrain(voiceSwitch) {
+                start.linkTo(parent.start, 16.dp)
+                bottom.linkTo(debugSwitch.top, 32.dp)
+            }
+            constrain(debugView) {
+                start.linkTo(parent.start, 16.dp)
+                bottom.linkTo(voiceSwitch.top, 32.dp)
             }
             createHorizontalChain(gameGrid, bestScoreLabel, chainStyle = ChainStyle.Packed)
         }
