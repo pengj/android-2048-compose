@@ -10,12 +10,12 @@ import com.alexjlockwood.twentyfortyeight.ui.AppTheme
 import com.alexjlockwood.twentyfortyeight.ui.GameUi
 import com.alexjlockwood.twentyfortyeight.ui.observer.DirectionObserver
 import com.alexjlockwood.twentyfortyeight.ui.observer.HuaweiVoiceObserver
+import com.alexjlockwood.twentyfortyeight.ui.observer.ObserverFactory
 import com.alexjlockwood.twentyfortyeight.viewmodel.GameViewModel
 import com.alexjlockwood.twentyfortyeight.viewmodel.GameViewModelFactory
 import com.huawei.agconnect.config.AGConnectServicesConfig
 import com.huawei.hms.mlsdk.common.MLApplication
 
-private const val API_KEY = "client/api_key"
 class MainActivity : AppCompatActivity() {
 
     private lateinit var voiceObserver: DirectionObserver
@@ -53,10 +53,7 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun setObservers() {
-        val  config  = AGConnectServicesConfig.fromContext(application)
-        MLApplication.getInstance().apiKey = config.getString(API_KEY)
-
-        voiceObserver = HuaweiVoiceObserver {
+        voiceObserver = ObserverFactory.getDirectionObserver(this) {
                 direction -> gameViewModel.move(direction)
         }
         voiceObserver.init(this)
