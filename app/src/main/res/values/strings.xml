@@ -1,3 +1,5 @@
 <resources>
     <string name="app_name">2048 Compose</string>
+    <string name="record_permission">"Voice record is required to listen the voice command"</string>
+    <string name="settings">Settings</string>
 </resources>
