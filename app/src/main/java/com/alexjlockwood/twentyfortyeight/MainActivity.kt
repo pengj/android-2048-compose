@@ -9,8 +9,8 @@ import androidx.compose.material.Surface
 import androidx.compose.ui.platform.setContent
 import com.alexjlockwood.twentyfortyeight.ui.AppTheme
 import com.alexjlockwood.twentyfortyeight.ui.GameUi
-import com.alexjlockwood.twentyfortyeight.ui.observer.DirectionObserver
-import com.alexjlockwood.twentyfortyeight.ui.observer.ObserverFactory
+import com.alexjlockwood.twentyfortyeight.ui.direction.DirectionProvider
+import com.alexjlockwood.twentyfortyeight.ui.direction.DirectionProviderFactory
 import com.alexjlockwood.twentyfortyeight.viewmodel.GameViewModel
 import com.alexjlockwood.twentyfortyeight.viewmodel.GameViewModelFactory
 import com.google.android.material.snackbar.Snackbar
@@ -20,7 +20,7 @@ import com.karumi.dexter.listener.single.SnackbarOnDeniedPermissionListener
 
 class MainActivity : AppCompatActivity() {
 
-    private lateinit var voiceObserver: DirectionObserver
+    private lateinit var directionProvider: DirectionProvider
     private val gameViewModel by viewModels<GameViewModel> { GameViewModelFactory(this) }
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -46,7 +46,7 @@ class MainActivity : AppCompatActivity() {
 
     override fun onDestroy() {
         super.onDestroy()
-        voiceObserver.destroy()
+        directionProvider.destroy()
     }
 
     private fun checkRecordPermission() {
@@ -71,10 +71,10 @@ class MainActivity : AppCompatActivity() {
         }).build()
 
     private fun setObservers() {
-        voiceObserver = ObserverFactory.getDirectionObserver(this) { direction -> gameViewModel.move(direction)
+        directionProvider = DirectionProviderFactory.getDirectionProvider(this) { direction -> gameViewModel.move(direction)
         }
-        voiceObserver.init(this)
-        gameViewModel.setDirectionObserver(voiceObserver)
+        directionProvider.init(this)
+        gameViewModel.setDirectionProvider(directionProvider)
     }
 
 }

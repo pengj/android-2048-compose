@@ -1,4 +1,4 @@
-package com.alexjlockwood.twentyfortyeight.ui.observer
+package com.alexjlockwood.twentyfortyeight.ui.direction
 
 import com.alexjlockwood.twentyfortyeight.domain.Direction
 

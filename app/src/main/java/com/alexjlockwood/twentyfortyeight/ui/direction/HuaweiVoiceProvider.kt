@@ -1,10 +1,9 @@
-package com.alexjlockwood.twentyfortyeight.ui.observer
+package com.alexjlockwood.twentyfortyeight.ui.direction
 
 import android.content.Context
 import android.content.Intent
 import android.os.Bundle
 import android.util.Log
-import com.alexjlockwood.twentyfortyeight.domain.Direction
 import com.huawei.hms.mlplugin.asr.MLAsrCaptureConstants
 import com.huawei.hms.mlsdk.asr.MLAsrConstants
 import com.huawei.hms.mlsdk.asr.MLAsrListener
@@ -13,9 +12,9 @@ import com.huawei.hms.mlsdk.asr.MLAsrRecognizer
 private const val ENGLISH_LANGUAGE_CODE = "en-US"
 private const val VOICE_TAG = "hmsVoice"
 
-class HuaweiVoiceObserver(
+class HuaweiVoiceProvider(
     private val onSwipeListener: (direction: String) -> Boolean,
-) : MLAsrListener, DirectionObserver {
+) : MLAsrListener, DirectionProvider {
 
     private lateinit var context: Context
     private var asrRecognizer: MLAsrRecognizer?  = null

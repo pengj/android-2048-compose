@@ -4,7 +4,7 @@ import android.content.Context
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import com.alexjlockwood.twentyfortyeight.repository.GameRepository
-import com.alexjlockwood.twentyfortyeight.ui.observer.VoiceDirectionMapper
+import com.alexjlockwood.twentyfortyeight.ui.direction.VoiceDirectionMapper
 
 class GameViewModelFactory(context: Context) : ViewModelProvider.Factory {
     private val context = context.applicationContext

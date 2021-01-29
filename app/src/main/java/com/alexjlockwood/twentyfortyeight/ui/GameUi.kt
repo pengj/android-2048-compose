@@ -25,7 +25,7 @@ import androidx.compose.ui.unit.sp
 import com.alexjlockwood.twentyfortyeight.R
 import com.alexjlockwood.twentyfortyeight.domain.Direction
 import com.alexjlockwood.twentyfortyeight.domain.GridTileMovement
-import com.alexjlockwood.twentyfortyeight.ui.observer.SwipeDragObserver
+import com.alexjlockwood.twentyfortyeight.ui.direction.SwipeDragObserver
 
 /**
  * Renders the 2048 game's home screen UI.

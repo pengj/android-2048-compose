@@ -1,8 +1,8 @@
-package com.alexjlockwood.twentyfortyeight.ui.observer
+package com.alexjlockwood.twentyfortyeight.ui.direction
 
 import android.content.Context
 
-interface DirectionObserver {
+interface DirectionProvider {
     fun init(context: Context)
     fun start()
     fun stop()

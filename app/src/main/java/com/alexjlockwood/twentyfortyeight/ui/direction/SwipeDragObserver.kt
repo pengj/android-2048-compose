@@ -1,4 +1,4 @@
-package com.alexjlockwood.twentyfortyeight.ui.observer
+package com.alexjlockwood.twentyfortyeight.ui.direction
 
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.gesture.DragObserver

@@ -8,8 +8,8 @@ import androidx.lifecycle.ViewModel
 import com.alexjlockwood.twentyfortyeight.domain.*
 import com.alexjlockwood.twentyfortyeight.repository.GameRepository
 import com.alexjlockwood.twentyfortyeight.ui.GameState
-import com.alexjlockwood.twentyfortyeight.ui.observer.DirectionObserver
-import com.alexjlockwood.twentyfortyeight.ui.observer.VoiceDirectionMapper
+import com.alexjlockwood.twentyfortyeight.ui.direction.DirectionProvider
+import com.alexjlockwood.twentyfortyeight.ui.direction.VoiceDirectionMapper
 import com.google.android.material.math.MathUtils.floorMod
 import kotlin.math.max
 
@@ -34,7 +34,7 @@ class GameViewModel(
         bestScore = gameRepository.bestScore))
         private set
 
-    private lateinit var voiceObserver: DirectionObserver
+    private lateinit var voiceProvider: DirectionProvider
 
     init {
         val savedGrid = gameRepository.grid
@@ -106,14 +106,14 @@ class GameViewModel(
     fun enableVoice(enabled: Boolean) {
         gameState = gameState.copy(isVoiceOn = enabled)
         if (enabled) {
-            voiceObserver.start()
+            voiceProvider.start()
         } else {
-            voiceObserver.stop()
+            voiceProvider.stop()
         }
     }
 
-    fun setDirectionObserver(voiceObserver: DirectionObserver) {
-        this.voiceObserver = voiceObserver
+    fun setDirectionProvider(voiceProvider: DirectionProvider) {
+        this.voiceProvider = voiceProvider
     }
 
 }
