@@ -41,6 +41,8 @@ fun GameUi(
     onSwipeListener: (direction: Direction) -> Unit,
 ) {
     var shouldShowNewGameDialog by remember { mutableStateOf(false) }
+    var shouldShowGameOverDialog by remember { mutableStateOf(true) }
+
     Scaffold(
         topBar = {
             TopAppBar(
@@ -98,13 +100,13 @@ fun GameUi(
             }
         }
     }
-    if (state.isGameOver) {
+    if (state.isGameOver && shouldShowGameOverDialog) {
         GameDialog(
             title = "Game over",
             message = "Start a new game?",
             onConfirmListener = { onNewGameRequested.invoke() },
             onDismissListener = {
-                // TODO: allow user to dismiss the dialog so they can take a screenshot
+                shouldShowGameOverDialog = false
             },
         )
     } else if (shouldShowNewGameDialog) {
@@ -114,6 +116,7 @@ fun GameUi(
             onConfirmListener = {
                 onNewGameRequested.invoke()
                 shouldShowNewGameDialog = false
+                shouldShowGameOverDialog = true
             },
             onDismissListener = {
                 shouldShowNewGameDialog = false

@@ -41,7 +41,7 @@ class MainActivity : AppCompatActivity() {
         }
 
         checkRecordPermission()
-        setObservers()
+        setVoiceDirectionProvider()
     }
 
     override fun onDestroy() {
@@ -70,8 +70,9 @@ class MainActivity : AppCompatActivity() {
             }
         }).build()
 
-    private fun setObservers() {
-        directionProvider = DirectionProviderFactory.getDirectionProvider(this) { direction -> gameViewModel.move(direction)
+    private fun setVoiceDirectionProvider() {
+        directionProvider = DirectionProviderFactory.getDirectionProvider(this) {
+                direction -> gameViewModel.move(direction)
         }
         directionProvider.init(this)
         gameViewModel.setDirectionProvider(directionProvider)
