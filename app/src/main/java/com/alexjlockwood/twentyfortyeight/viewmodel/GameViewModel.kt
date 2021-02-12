@@ -9,7 +9,6 @@ import com.alexjlockwood.twentyfortyeight.domain.*
 import com.alexjlockwood.twentyfortyeight.repository.GameRepository
 import com.alexjlockwood.twentyfortyeight.ui.GameState
 import com.alexjlockwood.twentyfortyeight.ui.direction.DirectionProvider
-import com.alexjlockwood.twentyfortyeight.ui.direction.VoiceDirectionMapper
 import com.google.android.material.math.MathUtils.floorMod
 import kotlin.math.max
 
@@ -21,8 +20,7 @@ private val EMPTY_GRID = (0 until GRID_SIZE).map { arrayOfNulls<Tile?>(GRID_SIZE
  * View model class that contains the logic that powers the 2048 game.
  */
 class GameViewModel(
-    private val gameRepository: GameRepository,
-    private val voiceDirectionMapper: VoiceDirectionMapper,
+    private val gameRepository: GameRepository
 ) : ViewModel() {
 
     private var grid: List<List<Tile?>> = EMPTY_GRID
@@ -59,12 +57,6 @@ class GameViewModel(
         grid = EMPTY_GRID.map { row, col, _ -> addedGridTiles.find { row == it.cell.row && col == it.cell.col }?.tile }
         gameState = gameState.copy(currentScore = 0, isGameOver = false, moveCount = 0)
         gameRepository.saveState(grid, 0, gameRepository.bestScore)
-    }
-
-    fun move(directionVoice: String): Boolean {
-        val direction = voiceDirectionMapper.mappingToDirection(directionVoice) ?: return false
-        move(direction = direction)
-        return true
     }
 
     fun move(direction: Direction) {

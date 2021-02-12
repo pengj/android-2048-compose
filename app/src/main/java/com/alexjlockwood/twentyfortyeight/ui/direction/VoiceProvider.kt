@@ -7,11 +7,13 @@ import android.speech.RecognitionListener
 import android.speech.RecognizerIntent
 import android.speech.SpeechRecognizer
 import android.util.Log
+import com.alexjlockwood.twentyfortyeight.domain.Direction
 
 private const val VOICE_TAG = "voiceObserver"
 private const val KEY_UNSTABLE_TEXT = "android.speech.extra.UNSTABLE_TEXT"
 class VoiceProvider(
-    private val onSwipeListener: (direction: String) -> Boolean
+    private val voiceDirectionExtractor: VoiceDirectionExtractor,
+    private val onSwipeListener: (direction: Direction) -> Unit
 ) : RecognitionListener, DirectionProvider {
     private lateinit var speech: SpeechRecognizer
     private lateinit var recognizerIntent: Intent
@@ -100,7 +102,8 @@ class VoiceProvider(
 
         Log.i(VOICE_TAG, text)
         if (startMap) {
-            if (onSwipeListener.invoke(text)) {
+            voiceDirectionExtractor.extractDirection(text)?.let {
+                onSwipeListener.invoke(it)
                 startMap = false
             }
         }

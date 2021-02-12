@@ -4,6 +4,7 @@ import android.content.Context
 import android.content.Intent
 import android.os.Bundle
 import android.util.Log
+import com.alexjlockwood.twentyfortyeight.domain.Direction
 import com.huawei.hms.mlplugin.asr.MLAsrCaptureConstants
 import com.huawei.hms.mlsdk.asr.MLAsrConstants
 import com.huawei.hms.mlsdk.asr.MLAsrListener
@@ -13,7 +14,8 @@ private const val ENGLISH_LANGUAGE_CODE = "en-US"
 private const val VOICE_TAG = "hmsVoice"
 
 class HuaweiVoiceProvider(
-    private val onSwipeListener: (direction: String) -> Boolean,
+    private val voiceDirectionExtractor: VoiceDirectionExtractor,
+    private val onSwipeListener: (direction: Direction) -> Unit,
 ) : MLAsrListener, DirectionProvider {
 
     private lateinit var context: Context
@@ -82,12 +84,10 @@ class HuaweiVoiceProvider(
     }
 
     private fun logResult(bundle: Bundle?, mapKey: String) {
-        val match = bundle?.getString(mapKey) ?: return
-        Log.i(VOICE_TAG, "mapping results : $match")
-        if (onSwipeListener.invoke(match)) {
-            Log.i(VOICE_TAG, "invoke")
-        } else {
-            Log.i(VOICE_TAG, "no action")
+        val text = bundle?.getString(mapKey) ?: return
+        Log.i(VOICE_TAG, "mapping results : $text")
+        voiceDirectionExtractor.extractDirection(text)?.let {
+            onSwipeListener.invoke(it)
         }
         if (enabled) {
             asrRecognizer?.destroy()
