@@ -74,7 +74,6 @@ class MainActivity : AppCompatActivity() {
         directionProvider = DirectionProviderFactory.getDirectionProvider(this) {
                 direction -> gameViewModel.move(direction)
         }
-        directionProvider.init(this)
         gameViewModel.setDirectionProvider(directionProvider)
     }
 

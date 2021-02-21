@@ -177,7 +177,7 @@ private fun buildConstraints(isPortrait: Boolean): ConstraintSet {
                 bottom.linkTo(debugSwitch.top, 32.dp)
             }
             constrain(debugView) {
-                start.linkTo(voiceSwitch.end, 32.dp)
+                start.linkTo(voiceSwitch.end, 64.dp)
                 top.linkTo(voiceSwitch.top, 32.dp)
             }
 

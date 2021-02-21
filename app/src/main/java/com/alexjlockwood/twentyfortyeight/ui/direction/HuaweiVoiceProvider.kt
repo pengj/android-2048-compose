@@ -13,41 +13,37 @@ import com.huawei.hms.mlsdk.asr.MLAsrRecognizer
 private const val ENGLISH_LANGUAGE_CODE = "en-US"
 private const val VOICE_TAG = "hmsVoice"
 
-class HuaweiVoiceProvider(
+internal class HuaweiVoiceProvider(
+    private val context: Context,
     private val voiceDirectionExtractor: VoiceDirectionExtractor,
-    private val onSwipeListener: (direction: Direction) -> Unit,
+    private val onDirectionListener: (direction: Direction) -> Unit,
 ) : MLAsrListener, DirectionProvider {
 
-    private lateinit var context: Context
-    private var asrRecognizer: MLAsrRecognizer?  = null
+    private var asrRecognizer: MLAsrRecognizer? = null
     private lateinit var recognizerIntent: Intent
     private var enabled = false
 
-    override fun init(context: Context) {
-        this.context = context
+    init {
         setupAsr()
     }
 
     override fun start() {
-        Log.i(VOICE_TAG, "star")
         asrRecognizer?.startRecognizing(recognizerIntent)
         enabled = true
     }
 
     override fun stop() {
-        Log.i(VOICE_TAG, "stop")
         enabled = false
     }
 
     override fun destroy() {
-        Log.i(VOICE_TAG, "destroy")
         asrRecognizer?.destroy()
         asrRecognizer = null
     }
 
     override fun onResults(result: Bundle?) {
         Log.i(VOICE_TAG, "onResults: ${result?.getString(MLAsrRecognizer.RESULTS_RECOGNIZED)}")
-        logResult(result, MLAsrRecognizer.RESULTS_RECOGNIZED)
+        handleResult(result, MLAsrRecognizer.RESULTS_RECOGNIZED)
     }
 
     override fun onRecognizingResults(result: Bundle?) {
@@ -83,11 +79,11 @@ class HuaweiVoiceProvider(
         }
     }
 
-    private fun logResult(bundle: Bundle?, mapKey: String) {
+    private fun handleResult(bundle: Bundle?, mapKey: String) {
         val text = bundle?.getString(mapKey) ?: return
         Log.i(VOICE_TAG, "mapping results : $text")
         voiceDirectionExtractor.extractDirection(text)?.let {
-            onSwipeListener.invoke(it)
+            onDirectionListener.invoke(it)
         }
         if (enabled) {
             asrRecognizer?.destroy()

@@ -11,17 +11,17 @@ import com.alexjlockwood.twentyfortyeight.domain.Direction
 
 private const val VOICE_TAG = "voiceObserver"
 private const val KEY_UNSTABLE_TEXT = "android.speech.extra.UNSTABLE_TEXT"
-class VoiceProvider(
+internal class VoiceProvider(
+    context: Context,
     private val voiceDirectionExtractor: VoiceDirectionExtractor,
-    private val onSwipeListener: (direction: Direction) -> Unit
+    private val onDirectionListener: (direction: Direction) -> Unit
 ) : RecognitionListener, DirectionProvider {
-    private lateinit var speech: SpeechRecognizer
-    private lateinit var recognizerIntent: Intent
+    private val speech: SpeechRecognizer = SpeechRecognizer.createSpeechRecognizer(context)
+    private val recognizerIntent: Intent
     private var enabled = false
     private var startMap = true
 
-    override fun init(context: Context) {
-        speech = SpeechRecognizer.createSpeechRecognizer(context)
+    init {
         speech.setRecognitionListener(this)
         recognizerIntent = Intent(RecognizerIntent.ACTION_RECOGNIZE_SPEECH).apply {
             putExtra(RecognizerIntent.EXTRA_LANGUAGE_PREFERENCE, "en")
@@ -79,20 +79,20 @@ class VoiceProvider(
 
     override fun onResults(results: Bundle?) {
         Log.i(VOICE_TAG, "onResults")
-        logResult(results, SpeechRecognizer.RESULTS_RECOGNITION)
+        handleResult(results, SpeechRecognizer.RESULTS_RECOGNITION)
         speech.startListening(recognizerIntent)
     }
 
     override fun onPartialResults(partialResults: Bundle?) {
         Log.i(VOICE_TAG, "onPartialResults")
-        logResult(partialResults, KEY_UNSTABLE_TEXT)
+        handleResult(partialResults, KEY_UNSTABLE_TEXT)
     }
 
     override fun onEvent(eventType: Int, params: Bundle?) {
         Log.i(VOICE_TAG, "onEvent: $eventType")
     }
 
-    private fun logResult(bundle: Bundle?, mapKey: String) {
+    private fun handleResult(bundle: Bundle?, mapKey: String) {
         val matches = bundle?.getStringArrayList(mapKey)
         var text = ""
 
@@ -103,7 +103,7 @@ class VoiceProvider(
         Log.i(VOICE_TAG, text)
         if (startMap) {
             voiceDirectionExtractor.extractDirection(text)?.let {
-                onSwipeListener.invoke(it)
+                onDirectionListener.invoke(it)
                 startMap = false
             }
         }

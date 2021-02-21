@@ -12,10 +12,10 @@ object DirectionProviderFactory {
     fun getDirectionProvider(context: Context,
                              onSwipeListener: (direction: Direction) -> Unit) =
         if (isGoogleServiceAvailable(context)) {
-            VoiceProvider(VoiceDirectionExtractor(), onSwipeListener)
+            VoiceProvider(context, VoiceDirectionExtractor(), onSwipeListener)
         } else {
             val  config  = AGConnectServicesConfig.fromContext(context)
             MLApplication.getInstance().apiKey = config.getString(API_KEY)
-            HuaweiVoiceProvider(VoiceDirectionExtractor(), onSwipeListener)
+            HuaweiVoiceProvider(context, VoiceDirectionExtractor(), onSwipeListener)
         }
 }
